@@ -211,6 +211,48 @@
                 style="@style/SettingsSpinner"
                 android:entries="@array/settings_add_trailing_space_array" />
 
+            <!-- Text Transformation Enabled -->
+            <TextView
+                android:id="@+id/label_text_transform_enabled"
+                style="@style/SettingsLabel"
+                android:text="@string/settings_text_transform_enabled" />
+            <TextView
+                android:id="@+id/description_text_transform_enabled"
+                style="@style/SettingsDescription"
+                android:text="@string/settings_text_transform_enabled_desc" />
+            <Spinner
+                android:id="@+id/spinner_text_transform_enabled"
+                style="@style/SettingsSpinner"
+                android:entries="@array/settings_text_transform_enabled_array" />
+
+            <!-- Text Transformation Prompt -->
+            <TextView
+                android:id="@+id/label_text_transform_prompt"
+                style="@style/SettingsLabel"
+                android:text="@string/settings_text_transform_prompt" />
+            <TextView
+                android:id="@+id/description_text_transform_prompt"
+                style="@style/SettingsDescription"
+                android:text="@string/settings_text_transform_prompt_desc" />
+            <EditText
+                android:id="@+id/field_text_transform_prompt"
+                style="@style/SettingsField"
+                android:hint="@string/settings_text_transform_prompt_hint" />
+
+            <!-- Text Transformation Model -->
+            <TextView
+                android:id="@+id/label_text_transform_model"
+                style="@style/SettingsLabel"
+                android:text="@string/settings_text_transform_model" />
+            <TextView
+                android:id="@+id/description_text_transform_model"
+                style="@style/SettingsDescription"
+                android:text="@string/settings_text_transform_model_desc" />
+            <EditText
+                android:id="@+id/field_text_transform_model"
+                style="@style/SettingsField"
+                android:hint="@string/settings_text_transform_model_hint" />
+
         </LinearLayout>
     </ScrollView>
 

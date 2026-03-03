@@ -63,6 +63,9 @@ val AUTO_RECORDING_START = booleanPreferencesKey("is-auto-recording-start")
 val AUTO_SWITCH_BACK = booleanPreferencesKey("auto-switch-back")
 val ADD_TRAILING_SPACE = booleanPreferencesKey("add-trailing-space")
 val POSTPROCESSING = stringPreferencesKey("postprocessing")
+val TEXT_TRANSFORM_ENABLED = booleanPreferencesKey("text-transform-enabled")
+val TEXT_TRANSFORM_PROMPT = stringPreferencesKey("text-transform-prompt")
+val TEXT_TRANSFORM_MODEL = stringPreferencesKey("text-transform-model")
 
 class MainActivity : AppCompatActivity() {
     private var setupSettingItemsDone: Boolean = false
@@ -344,6 +347,12 @@ class MainActivity : AppCompatActivity() {
                     getString(R.string.settings_option_to_simplified),
                     getString(R.string.settings_option_no_conversion)
                 ), getString(R.string.settings_option_to_traditional)),
+                SettingDropdown(R.id.spinner_text_transform_enabled, TEXT_TRANSFORM_ENABLED, hashMapOf(
+                    getString(R.string.settings_option_yes) to true,
+                    getString(R.string.settings_option_no) to false,
+                ), false),
+                SettingText(R.id.field_text_transform_prompt, TEXT_TRANSFORM_PROMPT),
+                SettingText(R.id.field_text_transform_model, TEXT_TRANSFORM_MODEL, getString(R.string.settings_option_openai_api_default_model)),
             )
             val btnApply: Button = findViewById(R.id.btn_settings_apply)
             btnApply.isEnabled = false

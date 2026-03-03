@@ -87,6 +87,21 @@
         <item>@string/settings_option_to_simplified</item>
         <item>@string/settings_option_no_conversion</item>
     </string-array>
+
+    <!-- Text Transformation Post-processing -->
+    <string name="settings_text_transform_enabled">Text Transformation</string>
+    <string name="settings_text_transform_enabled_desc">Enable post-processing to transform transcribed text using a text model.</string>
+    <string name="settings_text_transform_prompt">Transformation Prompt</string>
+    <string name="settings_text_transform_prompt_desc">Instructions for how to transform the transcribed text (e.g., "Fix grammar and spelling").</string>
+    <string name="settings_text_transform_prompt_hint">Enter prompt instructions…</string>
+    <string name="settings_text_transform_model">Transformation Model</string>
+    <string name="settings_text_transform_model_desc">The text model to use for transformation (e.g., gpt-4o-mini).</string>
+    <string name="settings_text_transform_model_hint">Enter model name (e.g., gpt-4o-mini)</string>
+    <string-array name="settings_text_transform_enabled_array">
+        <item>@string/settings_option_yes</item>
+        <item>@string/settings_option_no</item>
+    </string-array>
+
     <string name="desc_space_bar">Space Bar</string>
 
 </resources>

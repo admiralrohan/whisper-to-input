@@ -22,6 +22,16 @@ package com.example.whispertoinput
 import android.content.Context
 import android.util.Log
 import androidx.datastore.preferences.core.Preferences
+import ADD_TRAILING_SPACE
+import API_KEY
+import ENDPOINT
+import LANGUAGE_CODE
+import MODEL
+import POSTPROCESSING
+import SPEECH_TO_TEXT_BACKEND
+import TEXT_TRANSFORM_ENABLED
+import TEXT_TRANSFORM_MODEL
+import TEXT_TRANSFORM_PROMPT
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -32,8 +42,11 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 import com.github.liuyueyi.quick.transfer.ChineseUtils
+import org.json.JSONArray
+import org.json.JSONObject
 
 class WhisperTranscriber {
     private data class Config(
@@ -43,7 +56,10 @@ class WhisperTranscriber {
         val apiKey: String,
         val model: String,
         val postprocessing: String,
-        val addTrailingSpace: Boolean
+        val addTrailingSpace: Boolean,
+        val textTransformEnabled: Boolean,
+        val textTransformPrompt: String,
+        val textTransformModel: String
     )
 
     private val TAG = "WhisperTranscriber"
@@ -59,7 +75,7 @@ class WhisperTranscriber {
     ) {
         suspend fun makeWhisperRequest(): String {
             // Retrieve configs
-            val (endpoint, languageCode, speechToTextBackend, apiKey, model, postprocessing, addTrailingSpace) = context.dataStore.data.map { preferences: Preferences ->
+            val (endpoint, languageCode, speechToTextBackend, apiKey, model, postprocessing, addTrailingSpace, textTransformEnabled, textTransformPrompt, textTransformModel) = context.dataStore.data.map { preferences: Preferences ->
                 Config(
                     preferences[ENDPOINT] ?: "",
                     preferences[LANGUAGE_CODE] ?: "",
@@ -67,7 +83,10 @@ class WhisperTranscriber {
                     preferences[API_KEY] ?: "",
                     preferences[MODEL] ?: "",
                     preferences[POSTPROCESSING] ?: context.getString(R.string.settings_option_no_conversion),
-                    preferences[ADD_TRAILING_SPACE] ?: false
+                    preferences[ADD_TRAILING_SPACE] ?: false,
+                    preferences[TEXT_TRANSFORM_ENABLED] ?: false,
+                    preferences[TEXT_TRANSFORM_PROMPT] ?: "",
+                    preferences[TEXT_TRANSFORM_MODEL] ?: ""
                 )
             }.first()
 
@@ -110,11 +129,23 @@ class WhisperTranscriber {
                 else -> rawText // No conversion
             }
 
+            // Apply text transformation if enabled
+            val finalText = if (textTransformEnabled && textTransformPrompt.isNotEmpty() && textTransformModel.isNotEmpty()) {
+                try {
+                    transformText(processedText, textTransformPrompt, textTransformModel, apiKey)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Text transformation failed: ${e.message}. Using original text.")
+                    processedText
+                }
+            } else {
+                processedText
+            }
+
             if (attachToEnd == "") {
-                return processedText + if (addTrailingSpace) " " else ""
+                return finalText + if (addTrailingSpace) " " else ""
             } else {
                 // Only used for space key and enter key.
-                return processedText + attachToEnd
+                return finalText + attachToEnd
             }
         }
 
@@ -245,5 +276,62 @@ class WhisperTranscriber {
             .url(url)
             .post(requestBody)
             .build()
+    }
+
+    private fun transformText(
+        text: String,
+        prompt: String,
+        model: String,
+        apiKey: String
+    ): String {
+        val client = OkHttpClient()
+
+        // Build the chat completion request
+        val requestBodyJson = """
+        {
+            "model": "$model",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": "$prompt\n\nText to transform: \"$text\""
+                }
+            ],
+            "temperature": 0.7
+        }
+        """.trimIndent()
+
+        val requestBody = requestBodyJson.toRequestBody("application/json".toMediaTypeOrNull())
+
+        val requestHeaders = Headers.Builder()
+            .add("Authorization", "Bearer $apiKey")
+            .add("Content-Type", "application/json")
+            .build()
+
+        val request = Request.Builder()
+            .headers(requestHeaders)
+            .url("https://api.openai.com/v1/chat/completions")
+            .post(requestBody)
+            .build()
+
+        val response = client.newCall(request).execute()
+
+        if (!response.isSuccessful || response.code / 100 != 2) {
+            throw Exception("Text transformation failed: ${response.body?.string()?.replace('\n', ' ')}")
+        }
+
+        val responseBody = response.body?.string() ?: throw Exception("Empty response from text transformation")
+
+        // Parse the JSON response to extract the transformed text
+        // The response format is: {"choices": [{"message": {"content": "transformed text"}}]}
+        val jsonObject = org.json.JSONObject(responseBody)
+        val choicesArray: JSONArray = jsonObject.getJSONArray("choices")
+        if (choicesArray.length() == 0) {
+            throw Exception("No choices in text transformation response")
+        }
+        val firstChoice = choicesArray.getJSONObject(0)
+        val message = firstChoice.getJSONObject("message")
+        val transformedText = message.getString("content")
+
+        return transformedText.trim()
     }
 }
