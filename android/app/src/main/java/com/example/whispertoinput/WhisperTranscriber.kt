@@ -22,16 +22,6 @@ package com.example.whispertoinput
 import android.content.Context
 import android.util.Log
 import androidx.datastore.preferences.core.Preferences
-import ADD_TRAILING_SPACE
-import API_KEY
-import ENDPOINT
-import LANGUAGE_CODE
-import MODEL
-import POSTPROCESSING
-import SPEECH_TO_TEXT_BACKEND
-import TEXT_TRANSFORM_ENABLED
-import TEXT_TRANSFORM_MODEL
-import TEXT_TRANSFORM_PROMPT
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
